@@ -145,6 +145,36 @@ async function captureStandardizedProposal(
   }
 }
 
+/**
+ * Convert base64 Data URL to a native File object for Web Share API
+ */
+function dataUrlToFile(dataUrl: string, filename: string): File {
+  const arr = dataUrl.split(',');
+  const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
+
+/**
+ * Convert base64 Data URL to a native Blob object for reliable mobile/desktop downloads
+ */
+function dataUrlToBlob(dataUrl: string): Blob {
+  const arr = dataUrl.split(',');
+  const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
+}
+
 export const exportToPdf = async (
   element: HTMLElement,
   data: ProposalData,
@@ -189,6 +219,42 @@ export const exportToPdf = async (
     }
 
     const fileName = generateFilename(data, 'pdf');
+
+    // On mobile, check if we can share the PDF natively
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+    if (isMobile && navigator.canShare) {
+      try {
+        const pdfBlob = pdf.output('blob');
+        const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+        if (navigator.canShare({ files: [pdfFile] })) {
+          if (onProgress) onProgress('Abrindo menu para salvar ou compartilhar PDF...');
+          await navigator.share({
+            files: [pdfFile],
+            title: 'Orçamento Jana Confeitaria (PDF)',
+            text: `Orçamento em PDF para ${data.cliente || 'Cliente'}`,
+          });
+
+          try {
+            confetti({
+              particleCount: 50,
+              spread: 60,
+              origin: { y: 0.8 },
+              colors: ['#4F46E5', '#6366F1', '#B75234', '#F59E0B'],
+            });
+          } catch {}
+
+          if (onProgress) onProgress('PDF salvo/compartilhado com sucesso!');
+          return true;
+        }
+      } catch (shareErr: any) {
+        if (shareErr.name === 'AbortError') {
+          if (onProgress) onProgress('Ação cancelada.');
+          return false;
+        }
+        console.warn('Native share do PDF falhou, usando salvamento direto:', shareErr);
+      }
+    }
+
     pdf.save(fileName);
 
     // Celebratory confetti animation
@@ -221,13 +287,54 @@ export const exportToImage = async (
     if (onProgress) onProgress(`Preparando imagem ${format.toUpperCase()} em alta definição (Padrão Desktop)...`);
 
     const { dataUrl } = await captureStandardizedProposal(element, format, 0.95);
-
     const fileName = generateFilename(data, format);
 
-    // Trigger download
+    // Try native Mobile Web Share API first on mobile devices (triggers native "Salvar Imagem" / "Fotos" / "Arquivos")
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+    
+    if (isMobile && navigator.canShare) {
+      try {
+        const file = dataUrlToFile(dataUrl, fileName);
+        if (navigator.canShare({ files: [file] })) {
+          if (onProgress) onProgress('Abrindo menu nativo para salvar imagem no celular...');
+          await navigator.share({
+            files: [file],
+            title: 'Orçamento Jana Confeitaria',
+            text: `Orçamento para ${data.cliente || 'Cliente'}`,
+          });
+
+          // Celebratory confetti animation
+          try {
+            confetti({
+              particleCount: 40,
+              spread: 50,
+              origin: { y: 0.8 },
+              colors: ['#4F46E5', '#6366F1', '#B75234'],
+            });
+          } catch {}
+
+          if (onProgress) onProgress('Imagem salva/compartilhada com sucesso!');
+          return true;
+        }
+      } catch (shareErr: any) {
+        if (shareErr.name === 'AbortError') {
+          // User closed share modal, which is normal
+          if (onProgress) onProgress('Ação cancelada.');
+          return false;
+        }
+        console.warn('Web Share nativo não concluiu, usando download tradicional via Blob...', shareErr);
+      }
+    }
+
+    // Fallback for Desktop or browsers without Web Share: Clean Blob URL download
+    if (onProgress) onProgress('Salvando arquivo de imagem...');
+    const blob = dataUrlToBlob(dataUrl);
+    const blobUrl = URL.createObjectURL(blob);
+
     const link = document.createElement('a');
     link.download = fileName;
-    link.href = dataUrl;
+    link.href = blobUrl;
+    link.target = '_self';
     document.body.appendChild(link);
     link.click();
 
@@ -235,7 +342,8 @@ export const exportToImage = async (
       if (document.body.contains(link)) {
         document.body.removeChild(link);
       }
-    }, 200);
+      URL.revokeObjectURL(blobUrl);
+    }, 1500);
 
     // Celebratory confetti animation
     try {
