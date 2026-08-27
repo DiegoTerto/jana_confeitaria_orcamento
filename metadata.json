@@ -1,0 +1,6 @@
+{
+  "name": "Gerador de Orçamento - Jana Confeitaria",
+  "description": "Gerador interativo de propostas e orçamentos com edição em tempo real, visualização fiel e exportação em PDF e imagem.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
