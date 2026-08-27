@@ -15,6 +15,9 @@ export const ProposalPreview = forwardRef<HTMLDivElement, ProposalPreviewProps>(
       ? data.horarioManual
       : `${data.horarioInicio || '00:00'} às ${data.horarioFim || '00:00'} (${data.horasAtendimento}h de atendimento)`;
 
+    // Sanitize valorTotal to prevent duplicate R$ and avoid breaking across lines
+    const cleanValor = (data.valorTotal || '0,00').replace(/^R\$\s*/i, '').trim();
+
     return (
       <div className="flex justify-center items-start w-full overflow-hidden transition-all duration-200">
         <div
@@ -45,41 +48,41 @@ export const ProposalPreview = forwardRef<HTMLDivElement, ProposalPreviewProps>(
           <div className="px-4 space-y-4 text-[17px] leading-relaxed text-stone-900">
             
             {/* Event & Client Meta Information */}
-            <div className="space-y-3.5 pt-1">
-              <p className="flex items-baseline">
+            <div className="space-y-3 pt-1">
+              <div className="flex items-baseline">
                 <span className="font-bold text-[18px] text-black w-32 shrink-0">Data:</span>
                 <span className={`text-[17.5px] ${highlightChanges ? 'bg-amber-100/70 px-1 rounded' : ''}`}>
                   {data.data || '00/00/0000'}
                 </span>
-              </p>
+              </div>
 
-              <p className="flex items-baseline">
+              <div className="flex items-baseline">
                 <span className="font-bold text-[18px] text-black w-32 shrink-0">Cliente:</span>
                 <span className={`text-[17.5px] font-medium ${highlightChanges ? 'bg-amber-100/70 px-1 rounded' : ''}`}>
                   {data.cliente || 'Nome do Cliente'}
                 </span>
-              </p>
+              </div>
 
-              <p className="flex items-baseline">
+              <div className="flex items-baseline">
                 <span className="font-bold text-[18px] text-black w-32 shrink-0">Convidados:</span>
                 <span className={`text-[17.5px] ${highlightChanges ? 'bg-amber-100/70 px-1 rounded' : ''}`}>
                   {data.convidados || 'X Pessoas'}
                 </span>
-              </p>
+              </div>
 
-              <p className="flex items-baseline">
+              <div className="flex items-baseline">
                 <span className="font-bold text-[18px] text-black w-32 shrink-0">Local:</span>
                 <span className={`text-[17.5px] ${highlightChanges ? 'bg-amber-100/70 px-1 rounded' : ''}`}>
                   {data.local || 'Local do Evento'}
                 </span>
-              </p>
+              </div>
 
-              <p className="flex items-baseline">
+              <div className="flex items-baseline">
                 <span className="font-bold text-[18px] text-black w-32 shrink-0">Horário:</span>
                 <span className={`text-[17.5px] ${highlightChanges ? 'bg-amber-100/70 px-1 rounded' : ''}`}>
                   {formattedHorario}
                 </span>
-              </p>
+              </div>
             </div>
 
             {/* Divisor or Spacing */}
@@ -133,12 +136,12 @@ export const ProposalPreview = forwardRef<HTMLDivElement, ProposalPreviewProps>(
               </p>
 
               <div className="pl-6">
-                <p className="text-[18px] font-bold text-black flex items-center gap-2">
-                  <span>Valor Total:</span>
-                  <span className="text-amber-900 text-[20px] font-black tracking-tight">
-                    R$ {data.valorTotal || '0,00'}
+                <div className="text-[18px] font-bold text-black flex items-baseline gap-2 whitespace-nowrap">
+                  <span className="shrink-0">Valor Total:</span>
+                  <span className="text-amber-900 text-[21px] font-black tracking-tight whitespace-nowrap inline-block">
+                    R$ {cleanValor}
                   </span>
-                </p>
+                </div>
 
                 {data.condicoesPagamento && (
                   <p className="text-[14px] text-stone-600 mt-2 leading-relaxed">

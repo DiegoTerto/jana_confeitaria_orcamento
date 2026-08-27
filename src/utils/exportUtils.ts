@@ -38,9 +38,11 @@ async function captureStandardizedProposal(
   const sandbox = document.createElement('div');
   sandbox.id = 'export-isolated-sandbox';
   sandbox.style.position = 'fixed';
-  sandbox.style.left = '-9999px';
+  sandbox.style.left = '0';
   sandbox.style.top = '0';
   sandbox.style.width = '794px';
+  sandbox.style.minWidth = '794px';
+  sandbox.style.maxWidth = '794px';
   sandbox.style.minHeight = '1123px';
   sandbox.style.zIndex = '-9999';
   sandbox.style.opacity = '1';
@@ -50,7 +52,7 @@ async function captureStandardizedProposal(
   sandbox.style.padding = '0';
   sandbox.style.display = 'block';
   sandbox.style.visibility = 'visible';
-  sandbox.style.overflow = 'visible';
+  sandbox.style.overflow = 'hidden';
 
   // 3. Deep-clone the document node to completely isolate it from screen zoom and mobile CSS
   const clone = element.cloneNode(true) as HTMLElement;
@@ -59,6 +61,8 @@ async function captureStandardizedProposal(
   clone.style.boxShadow = 'none';
   clone.style.margin = '0';
   clone.style.width = '794px';
+  clone.style.minWidth = '794px';
+  clone.style.maxWidth = '794px';
   clone.style.minHeight = '1123px';
   clone.style.boxSizing = 'border-box';
   clone.style.backgroundColor = '#ffffff';
