@@ -42,7 +42,7 @@ export const ProposalPreview = forwardRef<HTMLDivElement, ProposalPreviewProps>(
           </div>
 
           {/* Document Content - Matches exact HTML structure */}
-          <div className="px-3 sm:px-4 space-y-4 text-[17px] leading-relaxed text-stone-900">
+          <div className="px-4 space-y-4 text-[17px] leading-relaxed text-stone-900">
             
             {/* Event & Client Meta Information */}
             <div className="space-y-3.5 pt-1">
@@ -122,39 +122,6 @@ export const ProposalPreview = forwardRef<HTMLDivElement, ProposalPreviewProps>(
                 )}
               </ul>
             </div>
-
-            {/* Sabores & Confeitos Extras (se preenchidos) */}
-            {(data.saboresLista.length > 0 || data.confeitosLista.length > 0) && (
-              <div className="mt-4 pt-2 border-t border-dashed border-stone-200 grid grid-cols-1 sm:grid-cols-2 gap-4 text-[14.5px]">
-                {data.saboresLista.length > 0 && (
-                  <div className="bg-stone-50/80 p-3 rounded border border-stone-100">
-                    <p className="font-bold text-stone-800 mb-1.5 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-700 inline-block" />
-                      Sabores Selecionados ({data.saboresLista.length}):
-                    </p>
-                    <ul className="list-inside list-disc text-stone-700 space-y-0.5 text-[13.5px]">
-                      {data.saboresLista.map((sabor, sIdx) => (
-                        <li key={sIdx} className="leading-snug">{sabor}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {data.confeitosLista.length > 0 && (
-                  <div className="bg-stone-50/80 p-3 rounded border border-stone-100">
-                    <p className="font-bold text-stone-800 mb-1.5 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-700 inline-block" />
-                      Confeitos Selecionados ({data.confeitosLista.length}):
-                    </p>
-                    <ul className="list-inside list-disc text-stone-700 space-y-0.5 text-[13.5px]">
-                      {data.confeitosLista.map((conf, cIdx) => (
-                        <li key={cIdx} className="leading-snug">{conf}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Divisor or Spacing */}
             <div className="py-2" />

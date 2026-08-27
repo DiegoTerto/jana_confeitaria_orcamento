@@ -36,8 +36,8 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
 
   return (
     <div
-      className="w-full relative overflow-hidden flex items-center justify-between px-6 sm:px-10 py-6 sm:py-8 select-none"
-      style={{ backgroundColor: currentTheme.bg, minHeight: '130px' }}
+      className="w-full relative overflow-hidden flex items-center justify-between px-10 py-8 select-none"
+      style={{ backgroundColor: currentTheme.bg, minHeight: '140px' }}
     >
       {/* Decorative subtle background overlay */}
       <div 
@@ -53,7 +53,7 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
         {/* Chef Hat with Heart */}
         <div className="relative mb-1 flex justify-center items-center">
           <svg
-            className="w-12 h-10 sm:w-14 sm:h-12 fill-current text-white drop-shadow-xs"
+            className="w-14 h-12 fill-current text-white drop-shadow-xs"
             viewBox="0 0 100 80"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -80,14 +80,14 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
         <div className="relative flex items-center justify-center">
           <div className="flex items-center tracking-widest">
             {/* Custom stylized J with heart */}
-            <span className="relative font-serif font-black text-2xl sm:text-3xl leading-none mr-0.5">
+            <span className="relative font-serif font-black text-3xl leading-none mr-0.5">
               J
               {/* Little heart tucked in the J loop */}
-              <span className="absolute -left-1 top-2.5 sm:top-3 text-[9px] sm:text-[10px] text-white">
+              <span className="absolute -left-1 top-3 text-[10px] text-white">
                 ♥
               </span>
             </span>
-            <span className="font-serif font-black text-2xl sm:text-3xl leading-none tracking-[0.18em]">
+            <span className="font-serif font-black text-3xl leading-none tracking-[0.18em]">
               ANA
             </span>
           </div>
@@ -95,18 +95,18 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
 
         {/* Subtitle "— CONFEITARIA —" */}
         <div className="flex items-center gap-1.5 mt-1">
-          <span className="w-3 sm:w-4 h-[1px] bg-white opacity-80" />
-          <span className="text-[9px] sm:text-[10px] font-medium tracking-[0.25em] uppercase text-white/95">
+          <span className="w-4 h-[1px] bg-white opacity-80" />
+          <span className="text-[10px] font-medium tracking-[0.25em] uppercase text-white/95">
             CONFEITARIA
           </span>
-          <span className="w-3 sm:w-4 h-[1px] bg-white opacity-80" />
+          <span className="w-4 h-[1px] bg-white opacity-80" />
         </div>
       </div>
 
       {/* Right side: ORÇAMENTO in grand display serif font */}
-      <div className="relative z-10 text-right pr-2 sm:pr-4">
+      <div className="relative z-10 text-right pr-4">
         <h1 
-          className="text-white font-serif italic text-3xl sm:text-5xl lg:text-[52px] tracking-[0.08em] font-normal drop-shadow-xs"
+          className="text-white font-serif italic text-[48px] tracking-[0.06em] font-normal drop-shadow-xs leading-tight"
           style={{
             fontFamily: '"Playfair Display", "Times New Roman", Georgia, serif',
             letterSpacing: '0.06em',

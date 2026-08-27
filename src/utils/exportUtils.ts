@@ -17,14 +17,15 @@ export const generateFilename = (data: ProposalData, extension: string): string 
 };
 
 /**
- * Capture an HTMLElement to a PNG or JPEG data URL with fallback mechanisms
+ * Captures the proposal document in an isolated, standardized sandbox
+ * ensuring 100% identical dimensions (794px Desktop A4 standard) across Mobile, Tablet, and Desktop.
  */
-async function captureElementToDataUrl(
+async function captureStandardizedProposal(
   element: HTMLElement,
   format: 'png' | 'jpeg' = 'png',
-  quality = 0.95
-): Promise<string> {
-  // Ensure web fonts are fully rendered
+  quality = 0.96
+): Promise<{ dataUrl: string; width: number; height: number }> {
+  // 1. Wait for web fonts to load
   try {
     if (document.fonts && document.fonts.ready) {
       await document.fonts.ready;
@@ -33,40 +34,113 @@ async function captureElementToDataUrl(
     // Ignore font loading inspection errors
   }
 
-  // Small delay for DOM settling
-  await new Promise((resolve) => setTimeout(resolve, 80));
+  // 2. Create off-screen sandbox container with fixed Desktop A4 standard width (794px)
+  const sandbox = document.createElement('div');
+  sandbox.id = 'export-isolated-sandbox';
+  sandbox.style.position = 'fixed';
+  sandbox.style.left = '-9999px';
+  sandbox.style.top = '0';
+  sandbox.style.width = '794px';
+  sandbox.style.minHeight = '1123px';
+  sandbox.style.zIndex = '-9999';
+  sandbox.style.opacity = '1';
+  sandbox.style.pointerEvents = 'none';
+  sandbox.style.backgroundColor = '#ffffff';
+  sandbox.style.margin = '0';
+  sandbox.style.padding = '0';
+  sandbox.style.display = 'block';
+  sandbox.style.visibility = 'visible';
+  sandbox.style.overflow = 'visible';
 
-  const options = {
-    quality,
-    pixelRatio: 2, // Crisp 2x retina/print resolution
-    backgroundColor: '#ffffff',
-    cacheBust: true,
-    style: {
-      transform: 'none',
-      boxShadow: 'none',
-      margin: '0',
-    },
-  };
+  // 3. Deep-clone the document node to completely isolate it from screen zoom and mobile CSS
+  const clone = element.cloneNode(true) as HTMLElement;
+  clone.style.transform = 'none';
+  clone.style.transformOrigin = 'top left';
+  clone.style.boxShadow = 'none';
+  clone.style.margin = '0';
+  clone.style.width = '794px';
+  clone.style.minHeight = '1123px';
+  clone.style.boxSizing = 'border-box';
+  clone.style.backgroundColor = '#ffffff';
+  clone.style.display = 'block';
+  clone.style.visibility = 'visible';
 
-  // Primary capture attempt with html-to-image
+  // Remove any temporary change-highlight background classes from the clone
+  const highlightedElements = clone.querySelectorAll('.bg-amber-100\\/70');
+  highlightedElements.forEach((el) => {
+    el.classList.remove('bg-amber-100/70', 'px-1', 'rounded');
+  });
+
+  sandbox.appendChild(clone);
+  document.body.appendChild(sandbox);
+
   try {
-    if (format === 'jpeg') {
-      return await toJpeg(element, options);
+    // 4. Ensure all images inside the clone are loaded
+    const images = Array.from(clone.querySelectorAll('img'));
+    if (images.length > 0) {
+      await Promise.all(
+        images.map(
+          (img) =>
+            new Promise<void>((resolve) => {
+              if (img.complete) {
+                resolve();
+              } else {
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+              }
+            })
+        )
+      );
     }
-    return await toPng(element, options);
-  } catch (primaryError) {
-    console.warn('Tentativa primária de captura falhou, tentando fallback com canvas...', primaryError);
 
-    // Fallback attempt without remote font embeds if font fetching failed
+    // 5. Short pause to allow DOM layout calculation and font metrics settling
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const standardWidth = 794;
+    const computedHeight = clone.offsetHeight || clone.scrollHeight || 1123;
+
+    const captureOptions = {
+      quality,
+      pixelRatio: 2, // High resolution for 300 DPI print quality
+      width: standardWidth,
+      height: computedHeight,
+      backgroundColor: '#ffffff',
+      cacheBust: true,
+      style: {
+        transform: 'none',
+        boxShadow: 'none',
+        margin: '0',
+        width: `${standardWidth}px`,
+        minHeight: '1123px',
+      },
+    };
+
+    let dataUrl: string;
+
     try {
-      const canvas = await toCanvas(element, {
-        ...options,
+      if (format === 'jpeg') {
+        dataUrl = await toJpeg(clone, captureOptions);
+      } else {
+        dataUrl = await toPng(clone, captureOptions);
+      }
+    } catch (primaryError) {
+      console.warn('Captura primária com toPng falhou, tentando fallback com canvas...', primaryError);
+      const canvas = await toCanvas(clone, {
+        ...captureOptions,
         skipFonts: true,
       });
-      return canvas.toDataURL(format === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
-    } catch (fallbackError) {
-      console.error('Falha no fallback de captura:', fallbackError);
-      throw fallbackError;
+      dataUrl = canvas.toDataURL(format === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
+    }
+
+    return {
+      dataUrl,
+      width: standardWidth,
+      height: computedHeight,
+    };
+  } finally {
+    // Clean up sandbox DOM container
+    if (document.body.contains(sandbox)) {
+      document.body.removeChild(sandbox);
     }
   }
 }
@@ -76,23 +150,14 @@ export const exportToPdf = async (
   data: ProposalData,
   onProgress?: (status: string) => void
 ): Promise<boolean> => {
-  const originalTransform = element.style.transform;
-  const originalBoxShadow = element.style.boxShadow;
-
   try {
-    if (onProgress) onProgress('Preparando documento de alta definição...');
+    if (onProgress) onProgress('Preparando documento padronizado (Padrão Desktop A4)...');
 
-    // Temporarily reset CSS scale transform for pixel-perfect standard dimensions
-    element.style.transform = 'none';
-    element.style.boxShadow = 'none';
-
-    if (onProgress) onProgress('Renderizando páginas em alta resolução (300 DPI)...');
-
-    const imgData = await captureElementToDataUrl(element, 'png', 0.98);
+    const { dataUrl, width, height } = await captureStandardizedProposal(element, 'png', 0.98);
 
     if (onProgress) onProgress('Criando arquivo PDF formatado...');
 
-    // A4 format in mm: 210 mm x 297 mm
+    // Standard A4 dimensions in millimeters
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -100,28 +165,25 @@ export const exportToPdf = async (
       compress: true,
     });
 
-    const pdfWidth = 210;
-    const pdfHeight = 297;
+    const pdfWidth = 210; // mm
+    const pdfHeight = 297; // mm
+    const calculatedHeightMm = (height * pdfWidth) / width;
 
-    const elementWidth = element.offsetWidth || 794;
-    const elementHeight = element.offsetHeight || 1123;
-    const calculatedHeightMm = (elementHeight * pdfWidth) / elementWidth;
-
-    if (calculatedHeightMm <= 300) {
-      // Single-page fit
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, Math.min(calculatedHeightMm, pdfHeight), undefined, 'FAST');
+    if (calculatedHeightMm <= 305) {
+      // Pristine standard single A4 page fit
+      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, Math.min(calculatedHeightMm, pdfHeight), undefined, 'FAST');
     } else {
-      // Multi-page handling if content exceeds single page
+      // Multi-page handling for extended proposals
       let heightLeft = calculatedHeightMm;
       let position = 0;
 
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, calculatedHeightMm, undefined, 'FAST');
+      pdf.addImage(dataUrl, 'PNG', 0, position, pdfWidth, calculatedHeightMm, undefined, 'FAST');
       heightLeft -= pdfHeight;
 
       while (heightLeft > 0) {
         position = heightLeft - calculatedHeightMm;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, calculatedHeightMm, undefined, 'FAST');
+        pdf.addImage(dataUrl, 'PNG', 0, position, pdfWidth, calculatedHeightMm, undefined, 'FAST');
         heightLeft -= pdfHeight;
       }
     }
@@ -138,7 +200,7 @@ export const exportToPdf = async (
         colors: ['#4F46E5', '#6366F1', '#B75234', '#F59E0B'],
       });
     } catch {
-      // Confetti is purely decorative
+      // Decorative
     }
 
     if (onProgress) onProgress('PDF baixado com sucesso!');
@@ -146,10 +208,6 @@ export const exportToPdf = async (
   } catch (error) {
     console.error('Erro ao exportar PDF:', error);
     throw error;
-  } finally {
-    // Always restore element presentation
-    element.style.transform = originalTransform;
-    element.style.boxShadow = originalBoxShadow;
   }
 };
 
@@ -159,18 +217,10 @@ export const exportToImage = async (
   format: 'png' | 'jpeg' = 'png',
   onProgress?: (status: string) => void
 ): Promise<boolean> => {
-  const originalTransform = element.style.transform;
-  const originalBoxShadow = element.style.boxShadow;
-
   try {
-    if (onProgress) onProgress(`Preparando imagem ${format.toUpperCase()} em alta definição...`);
+    if (onProgress) onProgress(`Preparando imagem ${format.toUpperCase()} em alta definição (Padrão Desktop)...`);
 
-    element.style.transform = 'none';
-    element.style.boxShadow = 'none';
-
-    if (onProgress) onProgress('Processando imagem do orçamento...');
-
-    const dataUrl = await captureElementToDataUrl(element, format, 0.95);
+    const { dataUrl } = await captureStandardizedProposal(element, format, 0.95);
 
     const fileName = generateFilename(data, format);
 
@@ -204,9 +254,6 @@ export const exportToImage = async (
   } catch (error) {
     console.error('Erro ao exportar imagem:', error);
     throw error;
-  } finally {
-    element.style.transform = originalTransform;
-    element.style.boxShadow = originalBoxShadow;
   }
 };
 
