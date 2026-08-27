@@ -1,4 +1,7 @@
+import defaultBannerImg from '../assets/images/jana_confeitaria_banner_1787863314920.jpg';
 import { ProposalData, PresetTemplate } from '../types';
+
+export const DEFAULT_BANNER_IMAGE = defaultBannerImg;
 
 export const initialProposalData: ProposalData = {
   data: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
@@ -43,7 +46,8 @@ export const initialProposalData: ProposalData = {
   contatoTelefone: '(44) 99930-2941',
   contatoInstagram: '@bolos_caceiros_da_jana_',
   
-  bannerType: 'vector',
+  bannerType: 'image',
+  bannerCustomImage: defaultBannerImg,
   bannerTheme: 'terracotta',
   docStyle: 'original'
 };

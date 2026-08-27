@@ -1,4 +1,5 @@
 import React from 'react';
+import { DEFAULT_BANNER_IMAGE } from '../utils/defaultData';
 
 interface HeaderBannerProps {
   bannerType: 'vector' | 'image';
@@ -20,15 +21,17 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
   theme = 'terracotta',
 }) => {
   const currentTheme = themeColors[theme] || themeColors.terracotta;
+  const imageSource = customImage || DEFAULT_BANNER_IMAGE;
 
-  if (bannerType === 'image' && customImage) {
+  if (bannerType === 'image' && imageSource) {
     return (
-      <div className="w-full overflow-hidden rounded-xs">
+      <div className="w-full overflow-hidden rounded-xs bg-stone-100">
         <img
-          src={customImage}
-          alt="Cabeçalho Orçamento"
-          className="w-full h-auto object-cover block"
+          src={imageSource}
+          alt="Cabeçalho Jana Confeitaria"
+          className="w-full h-auto max-h-[160px] object-cover block"
           crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
         />
       </div>
     );

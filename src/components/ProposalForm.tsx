@@ -760,62 +760,89 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
         {activeTab === 'estilo' && (
           <div className="space-y-4">
             
-            {/* Escolher Cor do Banner */}
+            {/* Tipo de Cabeçalho */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-2">
-                Paleta de Cores do Cabeçalho (Jana Confeitaria)
+                Tipo de Cabeçalho do Orçamento
               </label>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {[
-                  { id: 'terracotta', name: 'Terracota Original', color: '#B75234' },
-                  { id: 'caramel', name: 'Caramelo Quente', color: '#9C5B32' },
-                  { id: 'rose', name: 'Rosé Confeitaria', color: '#9E4E5D' },
-                  { id: 'chocolate', name: 'Chocolate Nobre', color: '#4A2E2B' },
-                  { id: 'burgundy', name: 'Vinho Bordô', color: '#6B2535' },
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => {
-                      handleChange('bannerTheme', t.id as any);
-                      handleChange('bannerType', 'vector');
-                    }}
-                    className={`flex items-center gap-2 p-2 rounded-lg border text-left text-xs transition-all cursor-pointer ${
-                      data.bannerTheme === t.id && data.bannerType === 'vector'
-                        ? 'border-indigo-600 bg-indigo-50/60 font-semibold ring-2 ring-indigo-500/20 text-indigo-950'
-                        : 'border-slate-200 hover:bg-slate-50 text-slate-700'
-                    }`}
-                  >
-                    <span
-                      className="w-5 h-5 rounded-full shrink-0 shadow-xs flex items-center justify-center text-white text-[10px]"
-                      style={{ backgroundColor: t.color }}
-                    >
-                      {data.bannerTheme === t.id && data.bannerType === 'vector' && <Check className="w-3 h-3" />}
-                    </span>
-                    <span className="truncate">{t.name}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleChange('bannerType', 'image')}
+                  className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+                    data.bannerType === 'image'
+                      ? 'border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20 text-indigo-950'
+                      : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <Sparkles className="w-4 h-4 text-indigo-600" />
+                  Imagem Fixa (Jana Confeitaria)
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleChange('bannerType', 'vector')}
+                  className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+                    data.bannerType === 'vector'
+                      ? 'border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20 text-indigo-950'
+                      : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <Palette className="w-4 h-4 text-slate-600" />
+                  Vetor Temático com Logo
+                </button>
               </div>
             </div>
+
+            {/* Escolher Cor do Banner (quando vetor) */}
+            {data.bannerType === 'vector' && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-2">
+                  Paleta de Cores do Cabeçalho (Jana Confeitaria)
+                </label>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {[
+                    { id: 'terracotta', name: 'Terracota Original', color: '#B75234' },
+                    { id: 'caramel', name: 'Caramelo Quente', color: '#9C5B32' },
+                    { id: 'rose', name: 'Rosé Confeitaria', color: '#9E4E5D' },
+                    { id: 'chocolate', name: 'Chocolate Nobre', color: '#4A2E2B' },
+                    { id: 'burgundy', name: 'Vinho Bordô', color: '#6B2535' },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        handleChange('bannerTheme', t.id as any);
+                      }}
+                      className={`flex items-center gap-2 p-2 rounded-lg border text-left text-xs transition-all cursor-pointer ${
+                        data.bannerTheme === t.id
+                          ? 'border-indigo-600 bg-indigo-50/60 font-semibold ring-2 ring-indigo-500/20 text-indigo-950'
+                          : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      <span
+                        className="w-5 h-5 rounded-full shrink-0 shadow-xs flex items-center justify-center text-white text-[10px]"
+                        style={{ backgroundColor: t.color }}
+                      >
+                        {data.bannerTheme === t.id && <Check className="w-3 h-3" />}
+                      </span>
+                      <span className="truncate">{t.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Upload de Imagem Customizada */}
             <div className="pt-3 border-t border-slate-200">
               <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
-                <span>Imagem Customizada de Cabeçalho</span>
-                {data.bannerCustomImage && (
-                  <button
-                    onClick={() => handleChange('bannerType', 'vector')}
-                    className="text-[11px] text-indigo-600 hover:underline cursor-pointer"
-                  >
-                    Usar vetor padrão
-                  </button>
-                )}
+                <span>Trocar por Imagem Própria / Arquivo</span>
               </label>
               
               <div className="mt-1 flex items-center gap-3">
                 <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-lg text-xs font-medium border border-slate-200 transition-colors">
                   <Upload className="w-3.5 h-3.5 text-slate-500" />
-                  Carregar imagem do cabeçalho...
+                  Carregar outra imagem...
                   <input
                     type="file"
                     accept="image/*"
@@ -824,9 +851,9 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
                   />
                 </label>
 
-                {data.bannerCustomImage && (
+                {data.bannerType === 'image' && (
                   <span className="text-xs text-emerald-700 flex items-center gap-1 font-medium">
-                    <CheckCircle className="w-3.5 h-3.5" /> Imagem ativa
+                    <CheckCircle className="w-3.5 h-3.5" /> Imagem ativa no orçamento
                   </span>
                 )}
               </div>
