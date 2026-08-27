@@ -1,4 +1,4 @@
-import defaultBannerImg from '../assets/images/jana_confeitaria_banner_1787863314920.jpg';
+import defaultBannerImg from '../assets/images/banner.png';
 import { ProposalData, PresetTemplate } from '../types';
 
 export const DEFAULT_BANNER_IMAGE = defaultBannerImg;
