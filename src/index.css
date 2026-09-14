@@ -21,6 +21,32 @@
   animation: fadeIn 0.2s ease-out forwards;
 }
 
+:root {
+  color-scheme: light;
+}
+
+* {
+  -webkit-tap-highlight-color: rgba(159, 18, 57, 0.16);
+}
+
+@media (max-width: 639px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  .proposal-form textarea {
+    line-height: 1.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
 @media print {
   body {
     background: #ffffff !important;

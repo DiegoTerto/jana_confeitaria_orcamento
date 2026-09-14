@@ -80,8 +80,8 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
   };
 
   return (
-    <div className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs px-4 sm:px-8 py-2.5">
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+    <div className="bg-white border-b border-stone-200 sticky top-0 z-30 shadow-xs px-3 sm:px-8 py-2.5">
+      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 sm:gap-3">
         
         {/* Left: Quick Actions & Status */}
         <div className="flex items-center gap-2">
@@ -90,13 +90,13 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
             id="btn-export-pdf"
             onClick={handleExportPdf}
             disabled={isExportingPdf || isExportingImg}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg font-medium text-xs sm:text-sm shadow-xs hover:shadow transition-all disabled:opacity-50 cursor-pointer"
+            className="min-h-11 flex items-center gap-2 px-3 sm:px-4 py-2 bg-rose-800 hover:bg-rose-900 active:bg-rose-950 text-white rounded-xl font-medium text-xs sm:text-sm shadow-sm transition-all disabled:opacity-50 cursor-pointer"
             title="Exportar documento completo em PDF com 1 clique"
           >
             {isExportingPdf ? (
               <Loader2 className="w-4 h-4 animate-spin text-white" />
             ) : (
-              <FileDown className="w-4 h-4 text-indigo-200" />
+              <FileDown className="w-4 h-4 text-rose-100" />
             )}
             <span>{isExportingPdf ? 'Exportando...' : 'Exportar PDF'}</span>
           </button>
@@ -106,7 +106,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
             id="btn-export-image"
             onClick={() => handleExportImage('png')}
             disabled={isExportingPdf || isExportingImg}
-            className="flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg font-medium text-xs sm:text-sm shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+            className="min-h-11 flex items-center gap-2 px-3 sm:px-3.5 py-2 bg-white hover:bg-stone-50 active:bg-stone-100 text-stone-700 border border-stone-200 rounded-xl font-medium text-xs sm:text-sm shadow-sm transition-all disabled:opacity-50 cursor-pointer"
             title="Salvar imagem PNG em alta resolução"
           >
             {isExportingImg ? (
@@ -123,7 +123,8 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
             <button
               id="btn-share-whatsapp"
               onClick={() => setShowShareModal(!showShareModal)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg font-medium text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
+              aria-expanded={showShareModal}
+              className="min-h-11 min-w-11 flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl font-medium text-xs sm:text-sm shadow-sm transition-all cursor-pointer"
               title="Opções de compartilhamento via WhatsApp"
             >
               <MessageCircle className="w-4 h-4 text-emerald-600" />
@@ -133,14 +134,13 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
             {showShareModal && (
               <div 
                 className="absolute left-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-50 text-xs space-y-1"
-                onMouseLeave={() => setShowShareModal(false)}
               >
                 <button
                   onClick={() => {
                     handleCopyWhatsApp();
                     setShowShareModal(false);
                   }}
-                  className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium transition-colors"
+                  className="min-h-11 w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-stone-100 text-stone-800 font-medium transition-colors"
                 >
                   {copiedWhatsapp ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-slate-500" />}
                   <span>Copiar Resumo em Texto</span>
@@ -151,7 +151,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                     handleOpenWhatsApp();
                     setShowShareModal(false);
                   }}
-                  className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-emerald-50 text-emerald-800 font-medium transition-colors"
+                  className="min-h-11 w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-emerald-50 text-emerald-800 font-medium transition-colors"
                 >
                   <MessageCircle className="w-4 h-4 text-emerald-600" />
                   <span>Abrir no WhatsApp Web</span>
@@ -173,14 +173,14 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
 
         {/* Center / Status Toast Feedback */}
         {statusMessage && (
-          <div className="text-xs font-semibold px-3 py-1 bg-indigo-50 text-indigo-900 rounded-full border border-indigo-200 animate-fade-in flex items-center gap-1.5 shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+          <div className="text-xs font-semibold px-3 py-1 bg-rose-50 text-rose-900 rounded-full border border-rose-200 animate-fade-in flex items-center gap-1.5 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-rose-700 animate-pulse" />
             {statusMessage}
           </div>
         )}
 
         {/* Right: Zoom & Preview Viewport Controls */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs text-slate-600">
+        <div className="hidden sm:flex items-center gap-1 bg-stone-100 p-1 rounded-lg border border-stone-200 text-xs text-stone-600">
           <button
             onClick={() => onZoomChange(Math.max(0.35, zoom - 0.1))}
             className="p-1 hover:bg-white hover:text-slate-900 rounded transition-colors"

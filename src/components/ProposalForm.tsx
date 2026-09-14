@@ -1,28 +1,43 @@
-import React, { useState } from 'react';
-import { ProposalData, PresetTemplate } from '../types';
-import { flavorSuggestions, toppingSuggestions, presetTemplates } from '../utils/defaultData';
+import React, { useRef, useState } from 'react';
+import { ProposalData } from '../types';
+import { flavorSuggestions, toppingSuggestions } from '../utils/defaultData';
 import { 
   Calendar, User, Users, MapPin, Clock, 
   Sparkles, DollarSign, Plus, Trash2, 
   Palette, RefreshCw, Layers, CheckCircle,
-  HelpCircle, Upload, Check
+  HelpCircle, Upload, Check, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 interface ProposalFormProps {
   data: ProposalData;
   onChange: (updatedData: ProposalData) => void;
   onReset: () => void;
+  onReview: () => void;
 }
 
 export const ProposalForm: React.FC<ProposalFormProps> = ({
   data,
   onChange,
   onReset,
+  onReview,
 }) => {
   const [activeTab, setActiveTab] = useState<'evento' | 'servico' | 'sabores' | 'valores' | 'estilo'>('evento');
+  const contentRef = useRef<HTMLDivElement>(null);
   const [newSaborInput, setNewSaborInput] = useState('');
   const [newConfeitoInput, setNewConfeitoInput] = useState('');
   const [newBulletInput, setNewBulletInput] = useState('');
+
+  const mobileSteps = [
+    { id: 'evento' as const, label: 'Evento', icon: User },
+    { id: 'oferta' as const, label: 'Oferta', icon: Sparkles, tab: 'servico' as const },
+    { id: 'finalizar' as const, label: 'Finalizar', icon: DollarSign, tab: 'valores' as const },
+  ];
+  const activeMobileStep = activeTab === 'evento' ? 0 : activeTab === 'servico' || activeTab === 'sabores' ? 1 : 2;
+  const goToTab = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const goToMobileStep = (index: number) => goToTab(index === 0 ? 'evento' : index === 1 ? 'servico' : 'valores');
 
   // Handle direct field change
   const handleChange = <K extends keyof ProposalData>(field: K, value: ProposalData[K]) => {
@@ -144,14 +159,6 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
     });
   };
 
-  // Apply preset template
-  const handleApplyPreset = (preset: PresetTemplate) => {
-    onChange({
-      ...data,
-      ...preset.data,
-    });
-  };
-
   // Handle custom image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -171,54 +178,34 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden text-slate-800">
-      {/* Header with Quick Presets */}
-      <div className="p-4 border-b border-slate-200 bg-white flex flex-wrap items-center justify-between gap-2">
+    <div className="proposal-form bg-white rounded-2xl border border-stone-200 shadow-sm flex flex-col h-full overflow-hidden text-slate-800">
+      {/* Header */}
+      <div className="p-4 sm:p-4 border-b border-stone-200 bg-white flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold text-slate-900 text-base flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-indigo-600" />
-            Editar Orçamento
+            <span className="w-2 h-2 rounded-full bg-rose-700" />
+            Seu orçamento
           </h2>
           <p className="text-xs text-slate-500">
-            Atualização em tempo real na folha ao lado
+            Preencha com calma — a proposta atualiza sozinha.
           </p>
         </div>
 
-        {/* Quick Presets Dropdown */}
-        <div className="flex items-center gap-2">
-          <select
-            id="preset-selector"
-            className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 font-medium text-slate-700 hover:border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-            onChange={(e) => {
-              const selected = presetTemplates.find(p => p.id === e.target.value);
-              if (selected) handleApplyPreset(selected);
-            }}
-            defaultValue=""
-          >
-            <option value="" disabled>Carregar Pacote Rápido...</option>
-            {presetTemplates.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome}
-              </option>
-            ))}
-          </select>
-
-          <button
-            id="btn-reset-form"
-            onClick={onReset}
-            title="Redefinir para valores iniciais"
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <button
+          id="btn-reset-form"
+          onClick={onReset}
+          title="Redefinir para valores iniciais"
+          className="min-w-11 min-h-11 p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Navigation Tabs (Mobile-Friendly Horizontal Scroll) */}
-      <div className="flex border-b border-slate-200 bg-white overflow-x-auto no-scrollbar px-2 pt-2 gap-1 text-xs">
+      <div className="hidden sm:flex border-b border-slate-200 bg-white overflow-x-auto no-scrollbar px-2 pt-2 gap-1 text-xs">
         <button
           id="tab-evento"
-          onClick={() => setActiveTab('evento')}
+          onClick={() => goToTab('evento')}
           className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg font-medium whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'evento'
               ? 'bg-indigo-50/70 text-indigo-700 border-b-2 border-indigo-600 font-semibold'
@@ -231,7 +218,7 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
 
         <button
           id="tab-servico"
-          onClick={() => setActiveTab('servico')}
+          onClick={() => goToTab('servico')}
           className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg font-medium whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'servico'
               ? 'bg-indigo-50/70 text-indigo-700 border-b-2 border-indigo-600 font-semibold'
@@ -244,7 +231,7 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
 
         <button
           id="tab-sabores"
-          onClick={() => setActiveTab('sabores')}
+          onClick={() => goToTab('sabores')}
           className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg font-medium whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'sabores'
               ? 'bg-indigo-50/70 text-indigo-700 border-b-2 border-indigo-600 font-semibold'
@@ -257,7 +244,7 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
 
         <button
           id="tab-valores"
-          onClick={() => setActiveTab('valores')}
+          onClick={() => goToTab('valores')}
           className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg font-medium whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'valores'
               ? 'bg-indigo-50/70 text-indigo-700 border-b-2 border-indigo-600 font-semibold'
@@ -270,7 +257,7 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
 
         <button
           id="tab-estilo"
-          onClick={() => setActiveTab('estilo')}
+          onClick={() => goToTab('estilo')}
           className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg font-medium whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'estilo'
               ? 'bg-indigo-50/70 text-indigo-700 border-b-2 border-indigo-600 font-semibold'
@@ -282,8 +269,31 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
         </button>
       </div>
 
+      <div className="sm:hidden border-b border-stone-200 bg-stone-50 px-4 py-3">
+        <div className="mb-2 flex items-center justify-between text-xs font-semibold text-stone-600">
+          <span>{mobileSteps[activeMobileStep].label}</span>
+          <span className="text-rose-800">{activeMobileStep + 1} de {mobileSteps.length}</span>
+        </div>
+        <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-stone-200" aria-hidden="true">
+          <div className="h-full rounded-full bg-rose-700 transition-all duration-300" style={{ width: `${((activeMobileStep + 1) / mobileSteps.length) * 100}%` }} />
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {mobileSteps.map((step, index) => {
+            const Icon = step.icon;
+            const selected = index === activeMobileStep;
+            return (
+              <button key={step.id} type="button" onClick={() => goToMobileStep(index)} aria-current={selected ? 'step' : undefined}
+                className={`min-h-11 rounded-xl border flex items-center justify-center gap-2 text-sm font-semibold transition-colors ${selected ? 'border-rose-700 bg-rose-700 text-white shadow-sm' : 'border-stone-200 bg-white text-stone-600 active:bg-stone-100'}`}>
+                <Icon className="h-4 w-4" />
+                <span>{step.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Tab Panels */}
-      <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs sm:text-sm flex-1">
+      <div ref={contentRef} className="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs sm:text-sm flex-1">
         
         {/* TAB 1: DADOS DO EVENTO */}
         {activeTab === 'evento' && (
@@ -430,10 +440,10 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
         {activeTab === 'servico' && (
           <div className="space-y-4">
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                  Itens da Descrição (Lista no Orçamento)
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <label className="text-sm font-semibold text-stone-800 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-rose-700" />
+                  O que está incluso
                 </label>
                 <button
                   onClick={() => {
@@ -446,49 +456,50 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
                     ];
                     handleChange('itensDescricao', defaultBullets);
                   }}
-                  className="text-[11px] text-indigo-600 hover:underline font-medium cursor-pointer"
+                  className="min-h-11 px-2 text-sm text-rose-800 hover:underline font-semibold cursor-pointer"
                 >
                   Restaurar padrão
                 </button>
               </div>
 
               {/* Dynamic Bullets List */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {data.itensDescricao.map((bullet, idx) => (
-                  <div key={idx} className="flex items-start gap-2 group">
-                    <span className="text-xs font-bold text-indigo-600 mt-2 shrink-0">
-                      {idx + 1}.
-                    </span>
+                  <div key={idx} className="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-xs font-bold text-stone-600">Item {idx + 1}</span>
+                      <button
+                        onClick={() => handleRemoveBullet(idx)}
+                        className="-mr-2 -mt-2 min-h-11 min-w-11 text-stone-400 hover:text-rose-700 transition-colors flex items-center justify-center cursor-pointer"
+                        title="Excluir item"
+                        aria-label={`Excluir item ${idx + 1}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                     <textarea
-                      rows={2}
+                      rows={3}
                       value={bullet}
                       onChange={(e) => handleUpdateBullet(idx, e.target.value)}
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all"
+                      className="w-full resize-y bg-white border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-900 leading-relaxed placeholder:text-stone-400 focus:outline-hidden focus:ring-2 focus:ring-rose-700/20 focus:border-rose-700 transition-all"
                     />
-                    <button
-                      onClick={() => handleRemoveBullet(idx)}
-                      className="p-1.5 text-slate-400 hover:text-red-600 transition-colors mt-1 cursor-pointer"
-                      title="Excluir item"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                 ))}
               </div>
 
               {/* Add New Item */}
-              <div className="flex gap-2 mt-3">
+              <div className="mt-4 rounded-xl border border-dashed border-stone-300 bg-white p-3 sm:flex sm:items-center sm:gap-2">
                 <input
                   type="text"
                   value={newBulletInput}
                   onChange={(e) => setNewBulletInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddBullet()}
                   placeholder="Adicionar novo item de serviço..."
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                  className="w-full sm:flex-1 bg-stone-50 border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-900 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-700/20 focus:border-rose-700 transition-all"
                 />
                 <button
                   onClick={handleAddBullet}
-                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer shadow-xs"
+                  className="mt-2 sm:mt-0 min-h-11 w-full sm:w-auto px-4 py-2 bg-rose-800 hover:bg-rose-900 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-sm"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Adicionar
@@ -499,8 +510,8 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
         )}
 
         {/* TAB 3: SABORES & CONFEITOS */}
-        {activeTab === 'sabores' && (
-          <div className="space-y-5">
+        {(activeTab === 'sabores' || activeTab === 'servico') && (
+          <div className={`space-y-5 ${activeTab === 'servico' ? 'sm:hidden' : ''}`}>
             {/* Resumo de Combinações */}
             <div className="bg-indigo-50/60 border border-indigo-100 rounded-lg p-3 flex items-center justify-between text-xs text-indigo-950">
               <div className="flex items-center gap-2">
@@ -533,54 +544,55 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
               </div>
 
               {/* Tag Chips for Flavors */}
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <div className="grid grid-cols-1 gap-2 mb-3">
                 {data.saboresLista.map((sabor, idx) => (
-                  <span
+                  <div
                     key={idx}
-                    className="inline-flex items-center gap-1 bg-slate-100 text-slate-800 text-xs px-2.5 py-1 rounded-md border border-slate-200 font-medium"
+                    className="min-h-11 flex items-center gap-2 bg-stone-50 text-stone-800 text-sm px-3 rounded-xl border border-stone-200 font-medium"
                   >
-                    {sabor}
+                    <span className="flex-1">{sabor}</span>
                     <button
                       onClick={() => handleRemoveSabor(idx)}
-                      className="text-slate-400 hover:text-red-600 font-bold ml-1 cursor-pointer"
+                      className="-mr-2 min-h-10 min-w-10 text-stone-400 hover:text-rose-700 flex items-center justify-center cursor-pointer"
+                      aria-label={`Remover ${sabor}`}
                     >
-                      ×
+                      <Trash2 className="w-4 h-4" />
                     </button>
-                  </span>
+                  </div>
                 ))}
               </div>
 
               {/* Input for adding custom flavor */}
-              <div className="flex gap-2 mb-2">
+              <div className="sm:flex sm:gap-2 mb-3">
                 <input
                   type="text"
                   value={newSaborInput}
                   onChange={(e) => setNewSaborInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddSabor(newSaborInput)}
                   placeholder="Nome do sabor de brigadeiro..."
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-900 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                  className="w-full sm:flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-stone-900 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-700/20 focus:border-rose-700 transition-all"
                 />
                 <button
                   onClick={() => handleAddSabor(newSaborInput)}
-                  className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-medium cursor-pointer shadow-xs transition-colors"
+                  className="mt-2 sm:mt-0 min-h-11 w-full sm:w-auto px-4 py-2 bg-rose-800 hover:bg-rose-900 text-white rounded-xl text-sm font-semibold cursor-pointer shadow-sm transition-colors"
                 >
                   + Sabor
                 </button>
               </div>
 
               {/* Suggestions Chips */}
-              <div className="text-[11px] text-slate-500">
-                <span className="font-medium text-slate-600 block mb-1">Sugestões rápidas:</span>
-                <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto pr-1">
+              <div className="text-sm text-stone-600">
+                <span className="font-semibold text-stone-800 block mb-2">Sugestões de sabores</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
                   {flavorSuggestions.map((sug, i) => (
                     <button
                       key={i}
                       onClick={() => handleAddSabor(sug)}
                       disabled={data.saboresLista.includes(sug)}
-                      className={`text-[10.5px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                      className={`min-h-11 px-3 rounded-xl border text-left text-sm font-medium transition-colors cursor-pointer ${
                         data.saboresLista.includes(sug)
-                          ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200'
+                          ? 'bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed'
+                          : 'bg-white text-rose-900 border-rose-100 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-200'
                       }`}
                     >
                       + {sug}
@@ -609,54 +621,55 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
               </div>
 
               {/* Tag Chips for Toppings */}
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <div className="grid grid-cols-1 gap-2 mb-3">
                 {data.confeitosLista.map((conf, idx) => (
-                  <span
+                  <div
                     key={idx}
-                    className="inline-flex items-center gap-1 bg-slate-100 text-slate-800 text-xs px-2.5 py-1 rounded-md border border-slate-200 font-medium"
+                    className="min-h-11 flex items-center gap-2 bg-stone-50 text-stone-800 text-sm px-3 rounded-xl border border-stone-200 font-medium"
                   >
-                    {conf}
+                    <span className="flex-1">{conf}</span>
                     <button
                       onClick={() => handleRemoveConfeito(idx)}
-                      className="text-slate-400 hover:text-red-600 font-bold ml-1 cursor-pointer"
+                      className="-mr-2 min-h-10 min-w-10 text-stone-400 hover:text-rose-700 flex items-center justify-center cursor-pointer"
+                      aria-label={`Remover ${conf}`}
                     >
-                      ×
+                      <Trash2 className="w-4 h-4" />
                     </button>
-                  </span>
+                  </div>
                 ))}
               </div>
 
               {/* Input for adding custom topping */}
-              <div className="flex gap-2 mb-2">
+              <div className="sm:flex sm:gap-2 mb-3">
                 <input
                   type="text"
                   value={newConfeitoInput}
                   onChange={(e) => setNewConfeitoInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddConfeito(newConfeitoInput)}
                   placeholder="Nome do confeito..."
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-900 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                  className="w-full sm:flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-stone-900 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-rose-700/20 focus:border-rose-700 transition-all"
                 />
                 <button
                   onClick={() => handleAddConfeito(newConfeitoInput)}
-                  className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-medium cursor-pointer shadow-xs transition-colors"
+                  className="mt-2 sm:mt-0 min-h-11 w-full sm:w-auto px-4 py-2 bg-rose-800 hover:bg-rose-900 text-white rounded-xl text-sm font-semibold cursor-pointer shadow-sm transition-colors"
                 >
                   + Confeito
                 </button>
               </div>
 
               {/* Suggestions Chips for Toppings */}
-              <div className="text-[11px] text-slate-500">
-                <span className="font-medium text-slate-600 block mb-1">Sugestões de confeitos:</span>
-                <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto pr-1">
+              <div className="text-sm text-stone-600">
+                <span className="font-semibold text-stone-800 block mb-2">Sugestões de confeitos</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
                   {toppingSuggestions.map((sug, i) => (
                     <button
                       key={i}
                       onClick={() => handleAddConfeito(sug)}
                       disabled={data.confeitosLista.includes(sug)}
-                      className={`text-[10.5px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                      className={`min-h-11 px-3 rounded-xl border text-left text-sm font-medium transition-colors cursor-pointer ${
                         data.confeitosLista.includes(sug)
-                          ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200'
+                          ? 'bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed'
+                          : 'bg-white text-rose-900 border-rose-100 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-200'
                       }`}
                     >
                       + {sug}
@@ -701,11 +714,11 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
               </label>
               <textarea
                 id="input-condicoes"
-                rows={2}
+                rows={4}
                 value={data.condicoesPagamento}
                 onChange={(e) => handleChange('condicoesPagamento', e.target.value)}
                 placeholder="Ex: 50% na reserva e 50% até a semana do evento via Pix ou Cartão."
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all"
+                className="w-full resize-y bg-stone-50 border border-stone-200 rounded-xl px-3 py-3 text-sm text-stone-900 leading-relaxed placeholder:text-stone-400 focus:outline-hidden focus:ring-2 focus:ring-rose-700/20 focus:border-rose-700 focus:bg-white transition-all"
               />
             </div>
 
@@ -716,11 +729,11 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
               </label>
               <textarea
                 id="input-observacoes"
-                rows={2}
+                rows={4}
                 value={data.observacoes}
                 onChange={(e) => handleChange('observacoes', e.target.value)}
                 placeholder="Ex: Proposta válida por 10 dias. Consulte taxa de deslocamento."
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all"
+                className="w-full resize-y bg-stone-50 border border-stone-200 rounded-xl px-3 py-3 text-sm text-stone-900 leading-relaxed placeholder:text-stone-400 focus:outline-hidden focus:ring-2 focus:ring-rose-700/20 focus:border-rose-700 focus:bg-white transition-all"
               />
             </div>
 
@@ -757,8 +770,8 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
         )}
 
         {/* TAB 5: VISUAL & BANNER */}
-        {activeTab === 'estilo' && (
-          <div className="space-y-4">
+        {(activeTab === 'estilo' || activeTab === 'valores') && (
+          <div className={`space-y-4 ${activeTab === 'valores' ? 'sm:hidden' : ''}`}>
             
             {/* Tipo de Cabeçalho */}
             <div>
@@ -862,6 +875,17 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
           </div>
         )}
 
+      </div>
+
+      <div className="sm:hidden flex items-center gap-3 border-t border-stone-200 bg-white p-4">
+        <button type="button" onClick={() => activeMobileStep > 0 && goToMobileStep(activeMobileStep - 1)} disabled={activeMobileStep === 0}
+          className="min-h-12 flex-1 rounded-xl border border-stone-200 px-3 text-sm font-semibold text-stone-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+          <ChevronLeft className="h-4 w-4" /> Anterior
+        </button>
+        <button type="button" onClick={() => activeMobileStep < mobileSteps.length - 1 ? goToMobileStep(activeMobileStep + 1) : onReview()}
+          className="min-h-12 flex-1 rounded-xl bg-rose-700 px-3 text-sm font-semibold text-white shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+          {activeMobileStep === mobileSteps.length - 1 ? 'Ver prévia' : 'Continuar'} <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );

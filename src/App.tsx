@@ -77,25 +77,25 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900 font-sans antialiased">
       
       {/* Sleek Top Application Header */}
-      <header className="bg-white text-slate-900 border-b border-slate-200 px-4 sm:px-8 py-3.5 shrink-0">
+      <header className="bg-white text-stone-900 border-b border-stone-200 px-4 sm:px-8 py-3 shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           
           {/* Logo & App Title */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm font-serif font-black text-lg">
+            <div className="w-9 h-9 bg-rose-800 rounded-xl flex items-center justify-center text-white shadow-sm font-serif font-black text-lg">
               J
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-semibold tracking-tight text-slate-900">
+                <h1 className="text-base sm:text-lg font-semibold tracking-tight text-stone-900">
                   Jana Confeitaria
                 </h1>
-                <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-md hidden sm:inline">
+                <span className="text-[10px] uppercase font-bold tracking-wider bg-stone-100 text-stone-600 border border-stone-200 px-2 py-0.5 rounded-md hidden sm:inline">
                   Gerador de Orçamento
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
-                Edição em tempo real & Exportação instantânea
+              <p className="text-xs text-stone-500">
+                Orçamentos prontos para enviar
               </p>
             </div>
           </div>
@@ -124,45 +124,13 @@ export default function App() {
         onFitZoom={handleAutoFitZoom}
       />
 
-      {/* Mobile Switcher Tab (Visible only on mobile/tablet) */}
-      <div className="lg:hidden bg-slate-100 border-b border-slate-200 p-1.5 flex gap-1.5 sticky top-[57px] z-20">
-        <button
-          id="btn-mobile-tab-form"
-          onClick={() => setMobileTab('form')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-lg transition-all ${
-            mobileTab === 'form'
-              ? 'bg-white text-indigo-600 shadow-sm font-semibold'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <Edit3 className="w-4 h-4 text-indigo-600" />
-          <span>Formulário de Edição</span>
-        </button>
-
-        <button
-          id="btn-mobile-tab-preview"
-          onClick={() => {
-            setMobileTab('preview');
-            setTimeout(handleAutoFitZoom, 50);
-          }}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded-lg transition-all ${
-            mobileTab === 'preview'
-              ? 'bg-white text-indigo-600 shadow-sm font-semibold'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
-        >
-          <Eye className="w-4 h-4 text-indigo-600" />
-          <span>Pré-Visualização (A4)</span>
-        </button>
-      </div>
-
       {/* Main Responsive Grid Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-6 pb-24 lg:pb-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Left Column: Interactive Dynamic Form (5 cols on Desktop) */}
         <section
           id="section-form-panel"
-          className={`lg:col-span-5 h-[calc(100vh-140px)] sticky top-[72px] ${
+          className={`lg:col-span-5 lg:h-[calc(100vh-140px)] lg:sticky lg:top-[72px] ${
             mobileTab === 'form' ? 'block' : 'hidden lg:block'
           }`}
         >
@@ -170,6 +138,11 @@ export default function App() {
             data={data}
             onChange={(updated) => setData(updated)}
             onReset={handleResetData}
+            onReview={() => {
+              setMobileTab('preview');
+              setTimeout(handleAutoFitZoom, 50);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
           />
         </section>
 
@@ -183,8 +156,8 @@ export default function App() {
         >
           {/* Visual Header / Guidance */}
           <div className="w-full flex items-center justify-between mb-3 text-xs text-slate-500 px-2">
-            <span className="flex items-center gap-1.5 font-medium text-slate-700">
-              <Eye className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="flex items-center gap-1.5 font-medium text-stone-700">
+              <Eye className="w-3.5 h-3.5 text-rose-700" />
               Visualização Fiel ao Documento
             </span>
             <span className="hidden sm:inline text-slate-400">
@@ -193,7 +166,7 @@ export default function App() {
           </div>
 
           {/* Canvas Viewport Backdrop */}
-          <div className="w-full bg-slate-100 rounded-xl p-4 sm:p-6 md:p-8 flex justify-center items-start overflow-x-auto shadow-xs border border-slate-200 min-h-[700px]">
+          <div className="w-full bg-stone-100 rounded-2xl p-3 sm:p-6 md:p-8 flex justify-center items-start overflow-x-auto shadow-xs border border-stone-200 min-h-[620px]">
             <ProposalPreview
               ref={documentRef}
               data={data}
@@ -211,6 +184,20 @@ export default function App() {
         </section>
 
       </main>
+
+      <nav className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 px-3 pt-2 backdrop-blur-md" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }} aria-label="Navegação do orçamento">
+        <div className="mx-auto flex max-w-md items-center gap-2">
+          <button id="btn-mobile-tab-form" onClick={() => { setMobileTab('form'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`min-h-12 flex-1 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors ${mobileTab === 'form' ? 'bg-rose-50 text-rose-800' : 'text-stone-600'}`}>
+            <Edit3 className="w-4 h-4" /> Editar
+          </button>
+          <button id="btn-mobile-tab-preview" onClick={() => { setMobileTab('preview'); setTimeout(handleAutoFitZoom, 50); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`min-h-12 flex-1 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors ${mobileTab === 'preview' ? 'bg-rose-50 text-rose-800' : 'text-stone-600'}`}>
+            <Eye className="w-4 h-4" /> Prévia
+          </button>
+          <button onClick={() => document.getElementById('btn-export-pdf')?.click()} className="min-h-12 min-w-12 rounded-xl bg-rose-800 text-white flex items-center justify-center shadow-sm" aria-label="Exportar PDF">
+            <Download className="w-4 h-4" />
+          </button>
+        </div>
+      </nav>
 
     </div>
   );
