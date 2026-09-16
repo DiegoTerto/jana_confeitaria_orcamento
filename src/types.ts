@@ -1,4 +1,5 @@
 export interface ProposalData {
+  contractType?: 'carrinho' | 'docinhos';
   // Dados do Cabeçalho e Cliente
   data: string;
   cliente: string;
@@ -37,6 +38,21 @@ export interface ProposalData {
   bannerCustomImage?: string;
   bannerTheme: 'terracotta' | 'caramel' | 'rose' | 'chocolate' | 'burgundy';
   docStyle: 'original' | 'modern';
+  docinhosItens?: DocinhoItem[];
+  servicos?: ServiceItem[];
+}
+
+export interface DocinhoItem {
+  id: string;
+  nome: string;
+  quantidade: number;
+  precoUnitario: number;
+}
+
+export interface ServiceItem {
+  id: string;
+  descricao: string;
+  valor: number;
 }
 
 export interface PresetTemplate {

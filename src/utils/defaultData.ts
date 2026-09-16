@@ -4,6 +4,7 @@ import { ProposalData, PresetTemplate } from '../types';
 export const DEFAULT_BANNER_IMAGE = defaultBannerImg;
 
 export const initialProposalData: ProposalData = {
+  contractType: 'carrinho',
   data: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
   cliente: 'Camila & Lucas',
   convidados: '100 Pessoas',
@@ -51,6 +52,40 @@ export const initialProposalData: ProposalData = {
   bannerTheme: 'terracotta',
   docStyle: 'original'
 };
+
+export const createDocinhosProposal = (base: ProposalData = initialProposalData): ProposalData => ({
+  ...base,
+  contractType: 'docinhos',
+  docinhosItens: [{ id: crypto.randomUUID(), nome: '', quantidade: 0, precoUnitario: 0 }],
+  servicos: [],
+  itensDescricao: [],
+  saboresQtd: 0,
+  saboresLista: [],
+  confeitosQtd: 0,
+  confeitosLista: [],
+  combinacoesCalculadas: 0,
+  valorTotal: '0,00',
+});
+
+export const createCarrinhoProposal = (base: ProposalData = initialProposalData): ProposalData => ({
+  ...initialProposalData,
+  cliente: base.cliente,
+  data: base.data,
+  convidados: base.convidados,
+  local: base.local,
+  horarioInicio: base.horarioInicio,
+  horarioFim: base.horarioFim,
+  condicoesPagamento: base.condicoesPagamento,
+  observacoes: base.observacoes,
+  contatoNome: base.contatoNome,
+  contatoTelefone: base.contatoTelefone,
+  contatoInstagram: base.contatoInstagram,
+  bannerType: base.bannerType,
+  bannerCustomImage: base.bannerCustomImage,
+  bannerTheme: base.bannerTheme,
+  docStyle: base.docStyle,
+  contractType: 'carrinho',
+});
 
 export const presetTemplates: PresetTemplate[] = [
   {

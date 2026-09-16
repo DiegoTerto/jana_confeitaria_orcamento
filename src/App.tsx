@@ -5,9 +5,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ProposalData } from './types';
-import { initialProposalData } from './utils/defaultData';
+import { createCarrinhoProposal, createDocinhosProposal, initialProposalData } from './utils/defaultData';
 import { ProposalForm } from './components/ProposalForm';
 import { ProposalPreview } from './components/ProposalPreview';
+import { DocinhosForm } from './components/DocinhosForm';
+import { DocinhosPreview } from './components/DocinhosPreview';
+import { ContractTypeChooser } from './components/ContractTypeChooser';
 import { ExportToolbar } from './components/ExportToolbar';
 import { 
   FileText, Edit3, Eye, Sparkles, Download, 
@@ -21,13 +24,14 @@ export default function App() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        return { ...JSON.parse(saved), contractType: JSON.parse(saved).contractType || 'carrinho' };
       }
     } catch (e) {
       console.warn('Erro ao carregar dados salvos:', e);
     }
     return initialProposalData;
   });
+  const [showTypeChooser, setShowTypeChooser] = useState(() => !localStorage.getItem(STORAGE_KEY));
 
   const [mobileTab, setMobileTab] = useState<'form' | 'preview'>('form');
   const [zoom, setZoom] = useState<number>(0.85);
@@ -67,9 +71,25 @@ export default function App() {
   }, []);
 
   const handleResetData = () => {
-    if (window.confirm('Deseja realmente redefinir o orçamento para os valores originais?')) {
-      setData(initialProposalData);
+    if (window.confirm('Deseja iniciar um novo orçamento?')) {
       localStorage.removeItem(STORAGE_KEY);
+      setData({ ...initialProposalData, contractType: 'carrinho' });
+      setShowTypeChooser(true);
+    }
+  };
+
+  const handleChooseType = (type: 'carrinho' | 'docinhos') => {
+    if (type === 'carrinho') {
+      setData(createCarrinhoProposal(data));
+    } else {
+      setData(createDocinhosProposal(data));
+    }
+    setShowTypeChooser(false);
+  };
+
+  const handleSwitchType = () => {
+    if (window.confirm('Trocar o tipo vai reiniciar os itens específicos deste orçamento. Deseja continuar?')) {
+      handleChooseType(data.contractType === 'docinhos' ? 'carrinho' : 'docinhos');
     }
   };
 
@@ -108,7 +128,7 @@ export default function App() {
               </span>
             )}
             <span className="text-[11px] font-medium bg-slate-100 text-slate-600 px-3 py-1 rounded-md border border-slate-200 hidden md:inline">
-              Carrinho de Brigadeiros Gourmet
+              {data.contractType === 'docinhos' ? 'Docinhos Tradicionais/Gourmet' : 'Carrinho Gourmet'}
             </span>
           </div>
 
@@ -134,16 +154,22 @@ export default function App() {
             mobileTab === 'form' ? 'block' : 'hidden lg:block'
           }`}
         >
-          <ProposalForm
+          {data.contractType === 'docinhos' ? <DocinhosForm
             data={data}
-            onChange={(updated) => setData(updated)}
+            onChange={setData}
+            onReset={handleResetData}
+            onReview={() => { setMobileTab('preview'); setTimeout(handleAutoFitZoom, 50); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            onSwitch={handleSwitchType}
+          /> : <ProposalForm
+            data={data}
+            onChange={(updated) => setData({ ...updated, contractType: 'carrinho' })}
             onReset={handleResetData}
             onReview={() => {
               setMobileTab('preview');
               setTimeout(handleAutoFitZoom, 50);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-          />
+          />}
         </section>
 
         {/* Right Column: Live Interactive Document Sheet (7 cols on Desktop) */}
@@ -167,12 +193,17 @@ export default function App() {
 
           {/* Canvas Viewport Backdrop */}
           <div className="w-full bg-stone-100 rounded-2xl p-3 sm:p-6 md:p-8 flex justify-center items-start overflow-x-auto shadow-xs border border-stone-200 min-h-[620px]">
-            <ProposalPreview
+            {data.contractType === 'docinhos' ? <DocinhosPreview
               ref={documentRef}
               data={data}
               scale={zoom}
               highlightChanges={highlightChanges}
-            />
+            /> : <ProposalPreview
+              ref={documentRef}
+              data={data}
+              scale={zoom}
+              highlightChanges={highlightChanges}
+            />}
           </div>
 
           {/* Quick tips under preview */}
@@ -198,6 +229,8 @@ export default function App() {
           </button>
         </div>
       </nav>
+
+      {showTypeChooser && <ContractTypeChooser onChoose={handleChooseType} />}
 
     </div>
   );
