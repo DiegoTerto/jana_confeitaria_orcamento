@@ -79,21 +79,31 @@ async function captureStandardizedProposal(
   document.body.appendChild(sandbox);
 
   try {
-    // 4. Ensure all images inside the clone are loaded
+    // 4. Inline images so html-to-image can render local/Vite assets reliably in the isolated clone
     const images = Array.from(clone.querySelectorAll('img'));
     if (images.length > 0) {
       await Promise.all(
-        images.map(
-          (img) =>
-            new Promise<void>((resolve) => {
-              if (img.complete) {
-                resolve();
-              } else {
-                img.onload = () => resolve();
-                img.onerror = () => resolve();
-              }
-            })
-        )
+        images.map(async (img) => {
+          if (!img.src || img.src.startsWith('data:')) return;
+          try {
+            const response = await fetch(img.src, { mode: 'cors' });
+            if (response.ok) {
+              const blob = await response.blob();
+              img.src = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(String(reader.result));
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              });
+            }
+          } catch (imageError) {
+            console.warn('Não foi possível incorporar a imagem no PDF:', imageError);
+          }
+          await new Promise<void>((resolve) => {
+            if (img.complete) resolve();
+            else { img.onload = () => resolve(); img.onerror = () => resolve(); }
+          });
+        })
       );
     }
 
