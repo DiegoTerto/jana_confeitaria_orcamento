@@ -79,6 +79,10 @@ export default function App() {
   };
 
   const handleChooseType = (type: 'carrinho' | 'docinhos') => {
+    if (data.contractType === type) {
+      setShowTypeChooser(false);
+      return;
+    }
     if (type === 'carrinho') {
       setData(createCarrinhoProposal(data));
     } else {
@@ -88,9 +92,7 @@ export default function App() {
   };
 
   const handleSwitchType = () => {
-    if (window.confirm('Trocar o tipo vai reiniciar os itens específicos deste orçamento. Deseja continuar?')) {
-      handleChooseType(data.contractType === 'docinhos' ? 'carrinho' : 'docinhos');
-    }
+    setShowTypeChooser(true);
   };
 
   return (
