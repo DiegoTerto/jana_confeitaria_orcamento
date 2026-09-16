@@ -14,7 +14,7 @@ import { ContractTypeChooser } from './components/ContractTypeChooser';
 import { ExportToolbar } from './components/ExportToolbar';
 import { 
   FileText, Edit3, Eye, Sparkles, Download, 
-  Check, Save, RotateCcw, Smartphone, Laptop
+  Check, Save, RotateCcw, Smartphone, Laptop, ArrowLeftRight
 } from 'lucide-react';
 
 const STORAGE_KEY = 'jana_confeitaria_proposal_draft_v1';
@@ -127,9 +127,22 @@ export default function App() {
                 <Check className="w-3.5 h-3.5 text-emerald-600" /> Salvo automaticamente
               </span>
             )}
-            <span className="text-[11px] font-medium bg-slate-100 text-slate-600 px-3 py-1 rounded-md border border-slate-200 hidden md:inline">
-              {data.contractType === 'docinhos' ? 'Docinhos Tradicionais/Gourmet' : 'Carrinho Gourmet'}
-            </span>
+            <button
+              type="button"
+              onClick={handleSwitchType}
+              className="group flex min-h-10 items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-left text-[11px] font-semibold text-rose-900 shadow-sm transition hover:border-rose-300 hover:bg-rose-100"
+              title="Trocar Orçamento"
+              aria-label="Trocar Orçamento"
+            >
+              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white text-rose-700 shadow-xs">
+                <ArrowLeftRight className="h-3.5 w-3.5" />
+              </span>
+              <span className="hidden sm:block">
+                <span className="block text-[9px] font-bold uppercase tracking-wider text-rose-600">Trocar Orçamento</span>
+                <span className="block max-w-[190px] truncate">{data.contractType === 'docinhos' ? 'Docinhos Tradicionais/Gourmet' : 'Carrinho Gourmet'}</span>
+              </span>
+              <span className="sm:hidden">Trocar Orçamento</span>
+            </button>
           </div>
 
         </div>
