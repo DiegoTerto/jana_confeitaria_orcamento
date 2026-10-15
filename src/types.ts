@@ -1,5 +1,5 @@
 export interface ProposalData {
-  contractType?: 'carrinho' | 'docinhos';
+  contractType?: 'carrinho' | 'docinhos' | 'contrato';
   // Dados do Cabeçalho e Cliente
   data: string;
   cliente: string;
@@ -40,6 +40,18 @@ export interface ProposalData {
   docStyle: 'original' | 'modern';
   docinhosItens?: DocinhoItem[];
   servicos?: ServiceItem[];
+  contratanteEndereco?: string;
+  contratanteNascimento?: string;
+  contratanteRg?: string;
+  contratanteCpf?: string;
+  contratoItens?: ContractItem[];
+}
+
+export interface ContractItem {
+  id: string;
+  descricao: string;
+  quantidade: number;
+  precoUnitario: number;
 }
 
 export interface DocinhoItem {

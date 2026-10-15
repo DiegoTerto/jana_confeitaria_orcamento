@@ -13,8 +13,11 @@ export const generateFilename = (data: ProposalData, extension: string): string 
 
   const clientName = data.cliente ? sanitize(data.cliente) : 'cliente';
   const rawDate = (data.data || 'orcamento').replace(/\//g, '-');
-  return `Orcamento_JanaConfeitaria_${clientName}_${rawDate}.${extension}`;
+  const documentType = data.contractType === 'contrato' ? 'Contrato' : 'Orcamento';
+  return `${documentType}_JanaConfeitaria_${clientName}_${rawDate}.${extension}`;
 };
+
+const exportDocumentLabel = (data: ProposalData) => data.contractType === 'contrato' ? 'Contrato' : 'Orçamento';
 
 /**
  * Captures the proposal document in an isolated, standardized sandbox
@@ -244,8 +247,8 @@ export const exportToPdf = async (
           if (onProgress) onProgress('Abrindo menu para salvar ou compartilhar PDF...');
           await navigator.share({
             files: [pdfFile],
-            title: 'Orçamento Jana Confeitaria (PDF)',
-            text: `Orçamento em PDF para ${data.cliente || 'Cliente'}`,
+            title: `${exportDocumentLabel(data)} Jana Confeitaria (PDF)`,
+            text: `${exportDocumentLabel(data)} em PDF para ${data.cliente || 'Cliente'}`,
           });
 
           try {
@@ -313,8 +316,8 @@ export const exportToImage = async (
           if (onProgress) onProgress('Abrindo menu nativo para salvar imagem no celular...');
           await navigator.share({
             files: [file],
-            title: 'Orçamento Jana Confeitaria',
-            text: `Orçamento para ${data.cliente || 'Cliente'}`,
+            title: `${exportDocumentLabel(data)} Jana Confeitaria`,
+            text: `${exportDocumentLabel(data)} para ${data.cliente || 'Cliente'}`,
           });
 
           // Celebratory confetti animation
@@ -380,6 +383,14 @@ export const exportToImage = async (
 };
 
 export const formatWhatsAppText = (data: ProposalData): string => {
+  if (data.contractType === 'contrato') {
+    const items = (data.contratoItens || []).filter(item => item.descricao.trim());
+    const itemSummary = items.map(item => `• ${item.descricao} — ${item.quantidade} × R$ ${item.precoUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`).join('\n');
+    const [year, month, day] = (data.data || '').split('-');
+    const eventDate = year && month && day ? `${day}/${month}/${year}` : data.data || 'Não informada';
+    return `📄 *CONTRATO - JANA CONFEITARIA*\n\n👤 *Contratante:* ${data.cliente || 'Não informado'}\n📅 *Data do evento:* ${eventDate}\n⏰ *Horário:* ${data.horarioManual || 'Não informado'}\n📍 *Endereço:* ${data.local || 'Não informado'}\n\n📋 *Itens contratados:*\n${itemSummary || 'Nenhum item informado'}\n\n💰 *Valor total: R$ ${data.valorTotal || '0,00'}*\n${data.condicoesPagamento ? `💳 *Negociação do pagamento:* ${data.condicoesPagamento}\n` : ''}`;
+  }
+
   const formattedHorario = data.usarHorarioManual
     ? data.horarioManual
     : `${data.horarioInicio || '00:00'} às ${data.horarioFim || '00:00'} (${data.horasAtendimento}h de atendimento)`;

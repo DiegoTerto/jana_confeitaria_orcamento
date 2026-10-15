@@ -5,11 +5,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ProposalData } from './types';
-import { createCarrinhoProposal, createDocinhosProposal, initialProposalData } from './utils/defaultData';
+import { createCarrinhoProposal, createContract, createDocinhosProposal, initialProposalData } from './utils/defaultData';
 import { ProposalForm } from './components/ProposalForm';
 import { ProposalPreview } from './components/ProposalPreview';
 import { DocinhosForm } from './components/DocinhosForm';
 import { DocinhosPreview } from './components/DocinhosPreview';
+import { ContractForm } from './components/ContractForm';
+import { ContractPreview } from './components/ContractPreview';
 import { ContractTypeChooser } from './components/ContractTypeChooser';
 import { ExportToolbar } from './components/ExportToolbar';
 import { 
@@ -78,15 +80,17 @@ export default function App() {
     }
   };
 
-  const handleChooseType = (type: 'carrinho' | 'docinhos') => {
+  const handleChooseType = (type: 'carrinho' | 'docinhos' | 'contrato') => {
     if (data.contractType === type) {
       setShowTypeChooser(false);
       return;
     }
     if (type === 'carrinho') {
       setData(createCarrinhoProposal(data));
-    } else {
+    } else if (type === 'docinhos') {
       setData(createDocinhosProposal(data));
+    } else {
+      setData(createContract(data));
     }
     setShowTypeChooser(false);
   };
@@ -113,11 +117,11 @@ export default function App() {
                   Jana Confeitaria
                 </h1>
                 <span className="text-[10px] uppercase font-bold tracking-wider bg-stone-100 text-stone-600 border border-stone-200 px-2 py-0.5 rounded-md hidden sm:inline">
-                  Gerador de Orçamento
+                  Gerador de Documentos
                 </span>
               </div>
               <p className="text-xs text-stone-500">
-                Orçamentos prontos para enviar
+                Orçamentos e contratos prontos para exportar
               </p>
             </div>
           </div>
@@ -133,17 +137,17 @@ export default function App() {
               type="button"
               onClick={handleSwitchType}
               className="group flex min-h-10 items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-left text-[11px] font-semibold text-rose-900 shadow-sm transition hover:border-rose-300 hover:bg-rose-100"
-              title="Trocar Orçamento"
-              aria-label="Trocar Orçamento"
+              title="Trocar documento"
+              aria-label="Trocar documento"
             >
               <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white text-rose-700 shadow-xs">
                 <ArrowLeftRight className="h-3.5 w-3.5" />
               </span>
               <span className="hidden sm:block">
-                <span className="block text-[9px] font-bold uppercase tracking-wider text-rose-600">Trocar Orçamento</span>
-                <span className="block max-w-[190px] truncate">{data.contractType === 'docinhos' ? 'Docinhos Tradicionais/Gourmet' : 'Carrinho Gourmet'}</span>
+                <span className="block text-[9px] font-bold uppercase tracking-wider text-rose-600">Trocar documento</span>
+                <span className="block max-w-[190px] truncate">{data.contractType === 'contrato' ? 'Contrato' : data.contractType === 'docinhos' ? 'Docinhos Tradicionais/Gourmet' : 'Carrinho Gourmet'}</span>
               </span>
-              <span className="sm:hidden">Trocar Orçamento</span>
+              <span className="sm:hidden">Trocar documento</span>
             </button>
           </div>
 
@@ -169,7 +173,13 @@ export default function App() {
             mobileTab === 'form' ? 'block' : 'hidden lg:block'
           }`}
         >
-          {data.contractType === 'docinhos' ? <DocinhosForm
+          {data.contractType === 'contrato' ? <ContractForm
+            data={data}
+            onChange={(updated) => setData({ ...updated, contractType: 'contrato' })}
+            onReset={handleResetData}
+            onReview={() => { setMobileTab('preview'); setTimeout(handleAutoFitZoom, 50); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            onSwitch={handleSwitchType}
+          /> : data.contractType === 'docinhos' ? <DocinhosForm
             data={data}
             onChange={setData}
             onReset={handleResetData}
@@ -208,7 +218,11 @@ export default function App() {
 
           {/* Canvas Viewport Backdrop */}
           <div className="w-full bg-stone-100 rounded-2xl p-3 sm:p-6 md:p-8 flex justify-center items-start overflow-x-auto shadow-xs border border-stone-200 min-h-[620px]">
-            {data.contractType === 'docinhos' ? <DocinhosPreview
+            {data.contractType === 'contrato' ? <ContractPreview
+              ref={documentRef}
+              data={data}
+              scale={zoom}
+            /> : data.contractType === 'docinhos' ? <DocinhosPreview
               ref={documentRef}
               data={data}
               scale={zoom}

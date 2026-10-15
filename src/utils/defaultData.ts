@@ -87,6 +87,22 @@ export const createCarrinhoProposal = (base: ProposalData = initialProposalData)
   contractType: 'carrinho',
 });
 
+export const createContract = (base: ProposalData = initialProposalData): ProposalData => ({
+  ...base,
+  contractType: 'contrato',
+  data: (() => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; })(),
+  cliente: '',
+  local: '',
+  horarioManual: '',
+  condicoesPagamento: '',
+  valorTotal: '0,00',
+  contratanteEndereco: '',
+  contratanteNascimento: '',
+  contratanteRg: '',
+  contratanteCpf: '',
+  contratoItens: [{ id: crypto.randomUUID(), descricao: '', quantidade: 1, precoUnitario: 0 }],
+});
+
 export const presetTemplates: PresetTemplate[] = [
   {
     id: 'padrao-4h',
